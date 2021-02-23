@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: influxdb-ip-service
+  name: influxdb
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector: 
     app: influxdb
   ports:
@@ -14,12 +14,13 @@ spec:
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: influxdb-deployment
+  name: influxdb
 spec:
   selector:
     matchLabels:
       app: influxdb
   replicas: 1
+  serviceName: influx
   template:
     metadata:
       labels:
@@ -52,10 +53,7 @@ spec:
               path: /health
               port: http
           env:
-            - name: INFLUXDB_DB
-              value: "phobos-db"
-            - name: INFLUXDB_HTTP_AUTH_ENABLED
-              value: "false"
+           
       volumes:
         - name: data
           emptyDir: {}

@@ -12,7 +12,6 @@ using Akka.Actor;
 using Akka.Bootstrap.Docker;
 using Akka.Configuration;
 using App.Metrics;
-using App.Metrics.Formatters.Prometheus;
 using Jaeger;
 using Jaeger.Reporters;
 using Jaeger.Samplers;
@@ -43,6 +42,12 @@ namespace Petabridge.Phobos.Web
         public const string JaegerEndpointEnvironmentVar = "JAEGER_ENDPOINT";
 
         public const string JaegerAgentPortEnvironmentVar = "JAEGER_AGENT_PORT";
+
+        public const string InfluxDbHostEnvironmentVar = "INFLUXDB_HOST";
+
+        public const string InfluxDbPortEnvironmentVar = "INFLUXDB_PORT";
+
+        public const string InfluxDbDbEnvironmentVar = "INFLUXDB_DB";
 
         public const int DefaultJaegerAgentPort = 6832;
 
@@ -86,16 +91,8 @@ namespace Petabridge.Phobos.Web
                         o.Enabled = true;
                         o.ReportingEnabled = true;
                     })
-                    .OutputMetrics.AsPrometheusPlainText()
+                    //.Report
                     .Build();
-
-                services.AddMetricsEndpoints(ep =>
-                {
-                    ep.MetricsTextEndpointOutputFormatter = metrics.OutputMetricsFormatters
-                        .OfType<MetricsPrometheusTextOutputFormatter>().First();
-                    ep.MetricsEndpointOutputFormatter = metrics.OutputMetricsFormatters
-                        .OfType<MetricsPrometheusTextOutputFormatter>().First();
-                });
             });
             services.AddMetricsReportingHostedService();
         }

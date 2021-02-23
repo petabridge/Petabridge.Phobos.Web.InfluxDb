@@ -82,6 +82,12 @@ spec:
           value: "seq"
         - name: SEQ_SERVICE_PORT
           value: "8988"
+        - name: INFLUXDB_HOST
+          value: "influxdb"
+        - name: INFLUXDB_PORT
+          value: "8086"
+        - name: INFLUXDB_DB
+          value: "phobos-db"
         livenessProbe:
           tcpSocket:
             port: 4055

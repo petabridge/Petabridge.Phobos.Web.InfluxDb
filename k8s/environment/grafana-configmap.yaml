@@ -981,7 +981,7 @@ data:
   providers.yaml: |
     apiVersion: 1
     datasources:
-    - name: 'InfluxDb'
+    - name: 'InfluxDB'
       type: influxdb
       access: proxy
       orgId: 1

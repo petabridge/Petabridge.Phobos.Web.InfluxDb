@@ -14,7 +14,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus-deployment
+  name: influxdb-deployment
 spec:
   selector:
     matchLabels:
@@ -31,7 +31,7 @@ spec:
           ports:
             - name: http
               containerPort: 8086
-              protocol: tcp
+              protocol: TCP
             - containerPort: 2003
           volumeMounts:
             - name: data
@@ -54,6 +54,8 @@ spec:
           env:
             - name: INFLUXDB_DB
               value: "phobos-db"
+            - name: INFLUXDB_HTTP_AUTH_ENABLED
+              value: "false"
       volumes:
         - name: data
           emptyDir: {}

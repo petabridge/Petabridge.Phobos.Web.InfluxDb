@@ -12,7 +12,7 @@ using Akka.Actor;
 using Akka.Bootstrap.Docker;
 using Akka.Configuration;
 using App.Metrics;
-using App.Metrics.Formatters.Prometheus;
+using App.Metrics.Formatters.InfluxDB;
 using Jaeger;
 using Jaeger.Reporters;
 using Jaeger.Samplers;
@@ -43,6 +43,12 @@ namespace Petabridge.Phobos.Web
         public const string JaegerEndpointEnvironmentVar = "JAEGER_ENDPOINT";
 
         public const string JaegerAgentPortEnvironmentVar = "JAEGER_AGENT_PORT";
+
+        public const string InfluxDbHostEnvironmentVar = "INFLUXDB_HOST";
+
+        public const string InfluxDbPortEnvironmentVar = "INFLUXDB_PORT";
+
+        public const string InfluxDbDbEnvironmentVar = "INFLUXDB_DB";
 
         public const int DefaultJaegerAgentPort = 6832;
 
@@ -86,16 +92,19 @@ namespace Petabridge.Phobos.Web
                         o.Enabled = true;
                         o.ReportingEnabled = true;
                     })
-                    .OutputMetrics.AsPrometheusPlainText()
+                    .Report.ToInfluxDb($"http://{Environment.GetEnvironmentVariable(InfluxDbHostEnvironmentVar)}" +
+                                    $":{Environment.GetEnvironmentVariable(InfluxDbPortEnvironmentVar)}", Environment.GetEnvironmentVariable(InfluxDbDbEnvironmentVar))
+                    .OutputMetrics.AsInfluxDbLineProtocol()
+                    //.Report.ToInfluxDb(options =>
+                    //{
+                    //    options.InfluxDb.BaseUri =
+                    //        ;
+                    //    options.InfluxDb.Database = Environment.GetEnvironmentVariable(InfluxDbDbEnvironmentVar);
+                    //    options.InfluxDb.CreateDataBaseIfNotExists = true;
+                    //    options.InfluxDb.RetentionPolicy = "rp";
+                    //    options.FlushInterval = TimeSpan.FromSeconds(5);
+                    //})
                     .Build();
-
-                services.AddMetricsEndpoints(ep =>
-                {
-                    ep.MetricsTextEndpointOutputFormatter = metrics.OutputMetricsFormatters
-                        .OfType<MetricsPrometheusTextOutputFormatter>().First();
-                    ep.MetricsEndpointOutputFormatter = metrics.OutputMetricsFormatters
-                        .OfType<MetricsPrometheusTextOutputFormatter>().First();
-                });
             });
             services.AddMetricsReportingHostedService();
         }
@@ -180,10 +189,6 @@ namespace Petabridge.Phobos.Web
             if (env.IsDevelopment()) app.UseDeveloperExceptionPage();
 
             app.UseRouting();
-
-            // enable App.Metrics routes
-            app.UseMetricsAllMiddleware();
-            app.UseMetricsAllEndpoints();
 
             app.UseEndpoints(endpoints =>
             {

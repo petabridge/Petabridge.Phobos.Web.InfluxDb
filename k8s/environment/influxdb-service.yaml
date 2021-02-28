@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: influxdb
+spec:
+  type: LoadBalancer
+  selector: 
+    app: influxdb
+  ports:
+    - name: http
+      port: 8086
+      targetPort: 8086
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: influxdb
+spec:
+  selector:
+    matchLabels:
+      app: influxdb
+  replicas: 1
+  serviceName: influx
+  template:
+    metadata:
+      labels:
+        app: influxdb
+    spec:
+      containers:
+        - name: influxdb
+          image: influxdb:1.8
+          ports:
+            - name: http
+              containerPort: 8086
+              protocol: TCP
+            - containerPort: 2003
+          volumeMounts:
+            - name: data
+              mountPath: /influxdb/
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+          env:
+           
+      volumes:
+        - name: data
+          emptyDir: {}

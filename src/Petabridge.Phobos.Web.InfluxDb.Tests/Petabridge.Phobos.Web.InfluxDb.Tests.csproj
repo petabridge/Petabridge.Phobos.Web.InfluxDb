@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Petabridge.Phobos.Web\Petabridge.Phobos.Web.InfluxDb.csproj" />
+    <ProjectReference Include="..\Petabridge.Phobos.Web.InfluxDb\Petabridge.Phobos.Web.InfluxDb.csproj" />
   </ItemGroup>
 
 </Project>

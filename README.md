@@ -1,12 +1,14 @@
-# Petabridge.Phobos.Web
-_This repository contains the source code for the [Phobos Quickstart Tutorial, which you can read here](https://phobos.petabridge.com/articles/quickstart.html)_.
+# Petabridge.Phobos.Web.InfluxDB
+_This repository is derived from the code we use in the [Phobos Quickstart Tutorial, which you can read here](https://phobos.petabridge.com/articles/quickstart.html)_ Everything is more or less the same, except our choice of [App.Metrics back-end](https://www.app-metrics.io/).
+
+> NOTE: this solution uses the [shared Phobos + InfluxDB Grafana dashboard built by Petabridge](https://phobos.petabridge.com/articles/dashboards/influxdb-dashboard.html), which you can install in your own application via Grafana Cloud here: https://grafana.com/grafana/dashboards/13964
 
 This project is a ready-made solution for testing [Phobos](https://phobos.petabridge.com/) in a real production environment using the following technologies:
 
 - .NET Core 3.1
 - ASP.NET Core 3.1
 - [Akka.Cluster](https://getakka.net/)
-- [Prometheus](https://prometheus.io/)
+- [InfluxDB](https://www.influxdata.com/) - we're using InfluxDB 1.8 in this instance.
 - [Jaeger Tracing](https://www.jaegertracing.io/)
 - [Grafana](https://grafana.com/)
 - [Docker](https://www.docker.com/)
@@ -39,7 +41,7 @@ From there, run the following commad on the prompt:
 PS> build.cmd Docker
 ```
 
-This will create the Docker images the solution needs to run inside Kubernetes: `petabridge.phobos.web:0.1.0`.
+This will create the Docker images the solution needs to run inside Kubernetes: `petabridge.phobos.web.influxdb:0.1.3`.
 
 ### Deploying the K8s Cluster (with Telemetry Installed)
 From there, everything you need to run the solution in Kubernetes is already defined inside the [`k8s/` folder](k8s/) - just run the following command to launch the Phobos-enabled application inside Kubernetes:
@@ -57,33 +59,39 @@ PS> kubectl get all -n phobos-web
 You should see the following or similar output:
 
 ```
-NAME                                        READY   STATUS    RESTARTS   AGE
-pod/grafana-5f54fd5bf4-wvdgw                1/1     Running   0          11m
-pod/jaeger-578558d6f9-2xzdv                 1/1     Running   0          11m
-pod/phobos-web-0                            1/1     Running   3          11m
-pod/phobos-web-1                            1/1     Running   2          10m
-pod/phobos-web-2                            1/1     Running   0          9m54s
-pod/prometheus-deployment-c6d99b8b9-28tmq   1/1     Running   0          11m
-
-NAME                            TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                               AGE
-service/grafana-ip-service      LoadBalancer   10.105.46.6      localhost     3000:31641/TCP                        11m
-service/jaeger-agent            ClusterIP      None             <none>        5775/UDP,6831/UDP,6832/UDP,5778/TCP   11m
-service/jaeger-collector        ClusterIP      10.109.248.20    <none>        14267/TCP,14268/TCP,9411/TCP          11m
-service/jaeger-query            LoadBalancer   10.109.204.203   localhost     16686:30911/TCP                       11m
-service/phobos-web              ClusterIP      None             <none>        4055/TCP                              11m
-service/phobos-webapi           LoadBalancer   10.103.247.68    localhost     1880:30424/TCP                        11m
-service/prometheus-ip-service   LoadBalancer   10.101.119.120   localhost     9090:31698/TCP                        11m
-service/zipkin                  ClusterIP      None             <none>        9411/TCP                              11m
-
-NAME                                    READY   UP-TO-DATE   AVAILABLE   AGE
-deployment.apps/grafana                 1/1     1            1           11m
-deployment.apps/jaeger                  1/1     1            1           11m
-deployment.apps/prometheus-deployment   1/1     1            1           11m
-
-NAME                                              DESIRED   CURRENT   READY   AGE
-replicaset.apps/grafana-5f54fd5bf4                1         1         1       11m
-replicaset.apps/jaeger-578558d6f9                 1         1         1       11m
-replicaset.apps/prometheus-deployment-c6d99b8b9   1         1         1       11m
+NAME                           READY   STATUS    RESTARTS   AGE                                                     
+pod/grafana-6f7b885758-7vl4s   1/1     Running   0          91s                                                     
+pod/influxdb-0                 1/1     Running   0          91s                                                     
+pod/jaeger-c8d6c4554-jgvqn     1/1     Running   0          90s                                                     
+pod/phobos-web-0               1/1     Running   0          89s                                                     
+pod/phobos-web-1               1/1     Running   0          81s                                                     
+pod/phobos-web-2               1/1     Running   0          78s                                                     
+pod/seq-6494b7f6cc-lz4xs       1/1     Running   0          90s                                                     
+                                                                                                                    
+NAME                         TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)                               AGE
+service/grafana-ip-service   LoadBalancer   10.100.28.153    localhost     3000:30798/TCP                        91s
+service/influxdb             LoadBalancer   10.103.90.222    localhost     8086:32188/TCP                        91s
+service/jaeger-agent         ClusterIP      None             <none>        5775/UDP,6831/UDP,6832/UDP,5778/TCP   90s
+service/jaeger-collector     ClusterIP      10.106.46.218    <none>        14267/TCP,14268/TCP,9411/TCP          90s
+service/jaeger-query         LoadBalancer   10.98.159.88     localhost     16686:32492/TCP                       90s
+service/phobos-web           ClusterIP      None             <none>        4055/TCP                              89s
+service/phobos-webapi        LoadBalancer   10.102.148.2     localhost     1880:32667/TCP                        89s
+service/seq                  LoadBalancer   10.110.158.217   localhost     8988:31822/TCP                        90s
+service/zipkin               ClusterIP      None             <none>        9411/TCP                              90s
+                                                                                                                    
+NAME                      READY   UP-TO-DATE   AVAILABLE   AGE                                                      
+deployment.apps/grafana   1/1     1            1           91s                                                      
+deployment.apps/jaeger    1/1     1            1           90s                                                      
+deployment.apps/seq       1/1     1            1           90s                                                      
+                                                                                                                    
+NAME                                 DESIRED   CURRENT   READY   AGE                                                
+replicaset.apps/grafana-6f7b885758   1         1         1       91s                                                
+replicaset.apps/jaeger-c8d6c4554     1         1         1       90s                                                
+replicaset.apps/seq-6494b7f6cc       1         1         1       90s                                                
+                                                                                                                    
+NAME                          READY   AGE                                                                           
+statefulset.apps/influxdb     1/1     91s                                                                           
+statefulset.apps/phobos-web   3/3     89s                                                                           
 ```
 
 > NOTE: the restarts from the `phobos-web-*` pods come from calling `Dns.GetHostName()` prior to the local K8s service allocating its hostnames. Nothing to worry about - it'll resolve itself in a few moments.
@@ -92,9 +100,9 @@ Once the cluster is fully up and running you can explore the application and its
 
 * [http://localhost:1880](http://localhost:1880) - generates traffic across the Akka.NET cluster inside the `phobos-web` service.
 * [http://localhost:16686/](http://localhost:16686/) - Jaeger tracing UI. Allows to explore the traces that are distributed across the different nodes in the cluster.
-* [http://localhost:9090/](http://localhost:9090/) - Prometheus query UI.
+* [http://localhost:8086/](http://localhost:8086/) - InfluxDB.
 * [http://localhost:3000/](http://localhost:3000/) - Grafana metrics. Log in using the username **admin** and the password **admin**. It includes some ready-made dashboards you can use to explore Phobos + App.Metrics metrics:
-	- [Akka.NET Cluster Metrics](https://grafana.com/grafana/dashboards/13775) - install via "Dashboard Import"
+	- [Akka.NET Cluster Metrics](http://localhost:3000/d/k_srkKsMz/akka-net-cluster-phobos-metrics-influx-data-source) - which are using the [shared Phobos + InfluxDB dashboard built by Petabridge](https://phobos.petabridge.com/articles/dashboards/influxdb-dashboard.html).
 	- [ASP.NET Core Metrics](http://localhost:3000/d/ggsijSPZz/asp-net-core-metrics?orgId=1)
 	- [Kubernetes Cluster Metrics](http://localhost:3000/d/9q974SWGz/kubernetes-pod-resources?orgId=1)
 * [http://localhost:8988/](http://localhost:8988/) - Seq log aggregation.
